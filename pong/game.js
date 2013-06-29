@@ -4,6 +4,7 @@ var canvasPaddle = document.getElementById("canvas_paddle");
 var ctxPaddle = canvasPaddle.getContext('2d');
 var canvasBall = document.getElementById("canvas_ball");
 var ctxBall = canvasBall.getContext('2d');
+var isPlaying = false;
 
 gameWidth = canvasBg.width;
 gameHeight = canvasBg.height;
@@ -25,9 +26,27 @@ var paddle = new Paddle();
 
 
 function init(){
-	ctxBg.clearRect(0, 0)
-	drawBg();
-	paddle.draw();
+	ctxBg.clearRect(0, 0);
+    document.addEventListener('keydown', checkKeyDown, false);
+    document.addEventListener('keyup', checkKeyUp, false);
+	startLoop();
+}
+
+function loop(){
+    if(isPlaying){
+        drawBg();
+        paddle.draw();
+        requestAnimFrame(loop);
+    }
+}
+
+function startLoop(){
+    isPlaying = true;
+    loop();
+}
+
+function stopLoop(){
+    isPlaying = false;
 }
 
 function drawBg(){
@@ -41,7 +60,7 @@ function Paddle(){
 	this.srcY = 800;
 	this.width = 70;
 	this.height = 80;
-	this.speed = 2;
+	this.speed = 10;
 	this.drawX = 0; //max 410 px
 	this.drawY = 635; // max 720 px
 	this.isUpKey = false;
@@ -57,7 +76,19 @@ Paddle.prototype.draw = function(){
 }
 
 Paddle.prototype.checkDirection = function() {
-	// if (this.isUpKey && this.is)
+    if(this.isUpKey && 635 < this.drawY){
+        this.drawY  -= this.speed;
+    }
+    if(this.isDownKey && gameHeight > this.drawY + this.height-30){
+        this.drawY  += this.speed;
+    }
+    if(this.isLeftKey && 0 < this.drawX){
+        this.drawX  -= this.speed;
+    }
+    if(this.isRightKey && gameWidth > this.drawX + this.width-30){
+        this.drawX  += this.speed;
+    }
+
 }
 
 
