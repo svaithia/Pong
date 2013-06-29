@@ -1,0 +1,11 @@
+body
+{ 
+	background: #000000;
+}
+canvas{
+	display: block; 
+}
+
+#canvas_paddle, #canvas_ball {
+	margin: -800px 0 0;
+}
