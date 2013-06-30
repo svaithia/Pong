@@ -23,7 +23,7 @@ imgSprite.src = 'images/imageSprite.png';
 imgSprite.addEventListener('load', init, false);
 
 var paddle = new Paddle();
-
+var balls = [new Ball(paddle)];
 
 function init(){
 	ctxBg.clearRect(0, 0);
@@ -36,6 +36,7 @@ function loop(){
     if(isPlaying){
         drawBg();
         paddle.draw();
+        drawBalls();
         requestAnimFrame(loop);
     }
 }
@@ -67,28 +68,42 @@ function Paddle(){
     this.isRightKey = false;
     this.isDownKey = false;
     this.isLeftKey = false;
+    this.bottomY; this.rightX; this.leftX; this.topY; // Just initalize them
+    this.boundsX = [0,70];
+    this.boundsY = [0,0];
+    this.score = 0;
 }
 
 Paddle.prototype.draw = function(){
 	clearCtxPaddle();
+    this.updateCo();
 	this.checkDirection();
 	ctxPaddle.drawImage(imgSprite, this.srcX, this.srcY, this.width, this.height, this.drawX, this.drawY, this.width, this.height);
 }
+
+Paddle.prototype.updateCo = function(){
+    this.bottomY = this.drawY + this.height-30;
+    this.rightX = this.drawX + this.width-30;
+    this.leftX = this.drawX;
+    this.topY = this.drawY;
+    this.boundsX[0] = this.drawX; this.boundsX[1] = this.drawX+70;
+    this.boundsY[0] = this.drawY; this.boundsY[1] = this.drawY;
+}    
+
 
 Paddle.prototype.checkDirection = function() {
     if(this.isUpKey && 635 < this.drawY){
         this.drawY  -= this.speed;
     }
-    if(this.isDownKey && gameHeight > this.drawY + this.height-30){
+    if(this.isDownKey && gameHeight > this.bottomY){
         this.drawY  += this.speed;
     }
     if(this.isLeftKey && 0 < this.drawX){
         this.drawX  -= this.speed;
     }
-    if(this.isRightKey && gameWidth > this.drawX + this.width-30){
+    if(this.isRightKey && gameWidth > this.rightX){
         this.drawX  += this.speed;
     }
-
 }
 
 
@@ -97,13 +112,67 @@ function clearCtxPaddle() {
     ctxPaddle.clearRect(0, 0, gameWidth, gameHeight);
 }
 
+// end of paddle functions
+
+// start of ball functions
+
+function Ball(paddle){
+    this.paddle = paddle;
+    this.srcX = 70;
+    this.srcY = 800;
+    this.width = 18;
+    this.height = 17;
+    this.speed = {'x':0.25, 'y':10};
+    this.drawX = Math.floor(Math.random()*gameWidth);
+    this.drawY = Math.floor(Math.random()*(-100));
+}
+
+Ball.prototype.draw = function(){
+    this.drawY += this.speed['y'];
+    this.drawX += this.speed['x'];
+    ctxBall.drawImage(imgSprite, this.srcX, this.srcY, this.width, this.height, this.drawX, this.drawY, this.width, this.height);
+    this.checkBallResult();
+}
+//70 by 64
+Ball.prototype.checkBallResult = function(){
+    var hit = this.paddle.boundsX[0] < (this.drawX+this.width) && this.paddle.boundsX[1] > this.drawX && (this.drawY + this.height) > this.paddle.boundsY[0];
+
+    if(hit && this.speed['y'] > 0){
+        this.speed['y'] *= -1.01;
+        this.paddle.score += Math.abs(this.speed) * 10;
+
+    }
+    if(this.drawY<0 && this.speed['y'] <0){
+        this.speed['y'] *= -1.015;
+    }
+    if(this.drawY + this.width > 800){
+        this.drawX = Math.floor(Math.random()*gameWidth);
+        this.drawY = Math.floor(Math.random()*(-100));
+        this.speed['y'] = (this.speed['y'] > 1.5)?(this.speed['y']*0.8) : 1;
+        var tempscore = this.paddle.score - Math.abs(this.speed)*50
+        
+        this.paddle.score = (tempscore<100 && tempscore > 0) ? (this.paddle.score*0.8) : tempscore;
+        this.score
+    }
+    this.paddle.score = Math.floor(this.paddle.score);
+}
+
+
+function drawBalls(){
+    clearCtxBall();
+    for (var i=0; i<balls.length; i++){
+        balls[i].draw();
+    }
+}
+
+
+function clearCtxBall() {
+    ctxBall.clearRect(0, 0, gameWidth, gameHeight);
+}
 
 
 
-
-
-
-
+// end of balls functions
 
 
 
